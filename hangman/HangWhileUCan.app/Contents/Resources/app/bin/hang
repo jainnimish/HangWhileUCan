@@ -1,0 +1,197 @@
+#!/usr/bin/env bash
+
+source /Applications/HangWhileUCan.app/Contents/Resources/figures.sh
+
+function print_usage(){
+  printf "\033c"
+  echo "FLAGS: "
+  echo "-h : prints out all the rules."
+  echo
+}
+
+function rules(){
+  printf "\033c"
+  echo "The rules are: "
+  echo
+  echo "- You have 7 turns to guess the entire word."
+  echo "- You can only enter small letters and can't guess entire words."
+  echo -e "- You can either choose guess a noun or adjective.\n"
+}
+
+function banner() {
+    local msg="* Welcome to HangWhileUCan - BlackHorse *"
+    local edge=$(echo "${msg}" | sed "s/./*/g")
+    tput setaf 99
+    echo -e "\n"
+    echo "${edge}"
+    echo "${msg}"
+    echo "${edge}"
+    tput sgr0
+    echo
+}
+
+
+function get_word(){
+  while true; do
+      read -p "Would you like to guess a noun or adjective?
+Enter 1 for noun and 2 for adjective: " decision
+      case $decision in
+          [1] ) word=noun; break;;
+          [2] ) word=adjective; break;;
+          * ) echo -e "\nPlease answer 1 or 2.\n";;
+      esac
+  done
+
+  local res=$(curl -s -H "Accept: application/json" -H "Content-Type: application/json" -X GET _REPLACE_WITH_YOUR_API${word})
+
+  local data=`echo $res | tr -d '"' | tr -d '{' | tr -d '}' | sed 's/.*://'`
+
+  words=$data
+  size=$(printf "%s" "$words" | wc -c)
+  nodups=`echo $words | sed 's/./&\n/g' | perl -ne '$H{$_}++ or print' | tr -d '\n'`
+  dupsize=$(printf "%s" "$nodups" | wc -c)
+
+}
+
+function print_word(){
+  echo -e "\nYour word is:\n"
+
+  tput setaf 226
+
+  for i in $(seq $size);
+  do
+    echo -ne "_ "
+  done
+
+  echo -e "\n"
+
+  tput sgr0
+}
+
+
+function check(){
+  wrong=0
+
+  wrongguess=""
+  all_guesses=""
+  correctguess=""
+  corguess=0
+
+  while true;
+  do
+    read -p "Please enter your guess: " guess
+
+    if [[ "${guess}" =~ [^a-z] ]]; then
+      echo -e "\nPlease enter a small-case letter.\n"
+
+    else
+      case $guess in
+        [$all_guesses] ) invalid;;
+        [$words] ) correct $guess;;
+        [!$words] ) wrong $guess;;
+        * ) echo -e "\nThat won't work..\n"
+      esac
+    fi
+  done
+
+}
+
+function five_wrong(){
+  while true; do
+    echo -e "\n"
+    read -p "Do you wish to play again? " yn
+    case $yn in
+      [Yy]* ) again; break;;
+      [Nn]* ) exit;;
+      * ) echo "Please answer yes or no.";;
+    esac
+  done
+}
+
+function again(){
+  printf "\033c"
+  banner
+  get_word
+  print_word
+  check
+}
+
+function wrong(){
+    wrong=$((wrong+1));
+
+    all_guesses+="$1";
+    wrongguess+="$1";
+
+    case $wrong in
+      [1] ) one;;
+      [2] ) two;;
+      [3] ) three;;
+      [4] ) four;;
+      [5] ) five;;
+      [6] ) six;;
+      [7] ) seven;;
+    esac
+
+
+    if [[ $wrong == 7 ]]; then
+      echo -e "\nThe word was: $words"
+      five_wrong
+    fi
+
+    tput setaf 124
+    echo -e "\nSorry, that was incorrect."
+    echo -e "\nHere are your WRONG guesses:"
+
+    for (( i=0; i<${#wrongguess}; i++ )); do
+      echo "$((i+1)): ${wrongguess:$i:1}"
+    done
+
+    tput sgr0
+    echo -e "\n"
+}
+
+function correct(){
+  all_guesses+="$1";
+  corguess=$((corguess+1));
+  correctguess+="$1";
+
+  if [[ "$corguess" -eq "$dupsize" ]]; then
+    printf "\033c"
+    echo -e "\nCONGRATS!! YOU WON!!"
+    five_wrong
+  fi
+
+  echo -e "\nThat was a letter! Here is your word: \n"
+
+  tput setaf 36
+  for (( i=0;i<${size}; i++ ));
+  do
+    if [[ $correctguess == *${words:i:1}* ]]; then
+      echo -ne "${words:i:1} "
+    else
+      echo -ne "_ "
+    fi
+  done
+
+  echo -e "\n"
+
+  tput sgr0
+}
+
+function invalid(){
+  tput setaf 184
+  echo -e "\nPlease choose another letter.\n"
+  tput sgr0
+}
+
+while getopts 'h' flag; do
+  case "${flag}" in
+    h) rules; exit 1;;
+    *) print_usage; exit 1;;
+  esac
+done
+
+again
+
+
+

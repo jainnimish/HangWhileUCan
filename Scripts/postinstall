@@ -1,0 +1,3 @@
+#!/bin/bash
+
+ln -s /Applications/HangWhileUCan.app/Contents/Resources/app/bin/hang /usr/local/bin/
