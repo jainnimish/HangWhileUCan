@@ -1,5 +1,6 @@
+![plot](./images/logo.png)
 # HangWhileUCan
-A simple hangman game written in shell. Queries a REST API hosted on ReplIt for words.
+A simple hangman game written in shell for the terminal. Queries a REST API hosted on Replit for words.
 
 ## Setup
 
@@ -11,7 +12,7 @@ You can then build your own `.pkg` file by running `build_script.sh`. Run the in
 
 ## Goals
 
-The main goals of this project were to learn the basics of scripting and regex,specifically, `sed`, `awk`, `grep`, and other common commands. Also wanted to learn deployment procedures and practices for deploying on different OS's.
+The main goals of this project were to learn the basics of scripting and regex, specifically, `sed`, `awk`, `grep`, and other common commands. Also wanted to learn deployment procedures and practices for deploying on different OS's.
 
 ## Todo
 
