@@ -1,4 +1,5 @@
-![plot](./images/logo.png)
+<img src="images/logo.png" alt="drawing" width="200"/>
+
 # HangWhileUCan
 A simple hangman game written in shell for the terminal. Queries a REST API hosted on Replit for words.
 
